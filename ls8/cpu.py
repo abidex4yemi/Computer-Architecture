@@ -6,39 +6,40 @@ import sys
 class CPU:
     def __init__(self):
         # 8 general-purpose registers
-        self.register = [0] * 8
+        self.reg = [0] * 8
 
         # hold 256 bytes of memory
-        self.memory = [0] * 255
+        self.ram = [0] * 255
 
         self.pc = 0
 
     def ram_read(self, address):
-        return self.memory_data_register[address]
+        # memory address register
+        return self.ram[address]
 
-    def ram_write(self, value):
-        return self.memory_data_register[value] = value
+    def ram_write(self, address, value):
+        self.ram[address] = value
 
-    def load(self):
+    def load(self, file_name):
         """Load a program into memory."""
-
         address = 0
 
-        # For now, we've just hardcoded a program:
+        try:
+            with open(file_name) as file:
+                for instruction in file:
+                    binary_num = instruction.split('#')
+                    binary_num = binary_num[0].strip()
 
-        program = [
-            # From print8.ls8
-            0b10000010,  # LDI R0,8
-            0b00000000,
-            0b00001000,
-            0b01000111,  # PRN R0
-            0b00000000,
-            0b00000001,  # HLT
-        ]
+                    if binary_num == '':
+                        continue
+                    self.ram_write(address, binary_num)
+                    address += 1
 
-        for instruction in program:
-            self.ram[address] = instruction
-            address += 1
+        except FileNotFoundError:
+            print("File not found")
+            sys.exit(1)
+
+        print(int(self.ram[0], 2))
 
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
