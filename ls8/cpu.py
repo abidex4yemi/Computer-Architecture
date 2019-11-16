@@ -12,6 +12,7 @@ class CPU:
         self.ram = [0] * 255
 
         self.pc = 0
+        self.sp = 0b11110100
 
     def ram_read(self, address):
         # memory address register
@@ -46,7 +47,8 @@ class CPU:
 
         if op == "ADD":
             self.reg[reg_a] += self.reg[reg_b]
-        # elif op == "SUB": etc
+        elif op == "MUL":
+            self.reg[reg_a] *= self.reg[reg_b]
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -72,4 +74,71 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
-        pass
+        IR = self.pc
+        operand_a = self.ram[self.pc + 1]
+        operand_b = self.ram[self.pc + 2]
+
+        runing = True
+        current_address = 0
+
+        while runing:
+            op_code = int(f'{self.ram_read(current_address)}', 2)
+            if op_code == 130:
+                self.reg[int(f'{self.ram_read(current_address+1)}', 2)
+                         ] = int(f'{self.ram_read(current_address+2)}', 2)
+                shift = op_code
+                increment = shift >> 6
+                current_address += (increment + 1)
+
+            elif op_code == 71:
+                binary = self.reg[int(
+                    f'{self.ram_read(current_address+1)}', 2)]
+                shift = op_code
+                increment = shift >> 6
+                current_address += (increment + 1)
+
+            elif op_code == 162:
+                self.alu('MUL', self.ram_read(current_address+1),
+                         self.ram_read(current_address+2))
+                shift = op_code
+                increment = shift >> 6
+                current_address += (increment + 1)
+
+            elif op_code == 160:
+                self.alu('ADD', self.ram_read(current_address+1),
+                         self.ram_read(current_address+2))
+                print(f"add result: {self.reg[0]}")
+                shift = op_code
+                increment = shift >> 6
+                current_address += (increment + 1)
+
+            elif op_code == 69:
+                self.reg[7] = self.reg[self.ram_read(current_address+1)]
+                self.sp -= 1
+                self.ram_write(self.sp, self.reg[7])
+
+                shift = op_code
+                increment = shift >> 6
+                current_address += (increment + 1)
+
+            elif op_code == 70:
+
+                self.reg[int(f'{self.ram_read(current_address+1)}', 2)
+                         ] = self.ram[self.sp]
+                self.sp += 1
+                shift = op_code
+                increment = shift >> 6
+                current_address += (increment + 1)
+
+            elif op_code == 1:
+                sys.exit(1)
+
+            elif op_code == 80:
+                self.sp -= 1
+                self.ram_write(self.sp, current_address+2)
+                current_address = self.reg[self.ram_read(current_address+1)]
+
+            elif op_code == 17:
+                current_address = self.ram_read(self.sp)
+                self.sp += 1
+                print(current_address)
