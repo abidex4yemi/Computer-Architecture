@@ -7,5 +7,9 @@ from cpu import *
 
 cpu = CPU()
 
-cpu.load()
-cpu.run()
+if len(sys.argv) != 2:
+    print("Usage: ls8.py <filename>", file=sys.stderr)
+else:
+    print(sys.argv)
+    cpu.load(sys.argv[1])
+    cpu.run()
